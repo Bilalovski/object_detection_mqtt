@@ -1,0 +1,41 @@
+{
+  "_templates": {
+    "mqtt": {
+      "addons": [
+      ],
+      "transport": {
+        "type": "mqtt",
+        "host": "broker.mqttdashboard.com",
+        "port": 8000,
+        "topic": "distai/status",
+        "publish": false
+      }
+    }
+  },
+    "subscriber-block": {
+    "links": {
+      "channels": {
+        "subscriber_rgb": {
+          "_template": "mqtt",
+          "transport": {
+            "topic": "distai/realsense/rgb",
+            "publish": false
+          }
+        }
+      }
+    }
+  },
+  "publisher-block": {
+    "links": {
+      "channels": {
+        "publisher_rgb": {
+          "_template": "mqtt",
+          "transport": {
+            "topic": "distai/realsense/rgb",
+            "publish": true
+          }
+      }
+    }
+  }
+}
+}
