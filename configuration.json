@@ -1,41 +1,58 @@
 {
   "_templates": {
-    "mqtt": {
+    "example-template": {
       "addons": [
+
       ],
       "transport": {
         "type": "mqtt",
         "host": "broker.mqttdashboard.com",
-        "port": 8000,
-        "topic": "distai/status",
-        "publish": false
+        "port": 1883
       }
     }
   },
-    "subscriber-block": {
+  "OD_pub": {
     "links": {
       "channels": {
-        "subscriber_rgb": {
-          "_template": "mqtt",
+        "publish-mqtt": {
+          "_template": "example-template",
           "transport": {
-            "topic": "distai/realsense/rgb",
-            "publish": false
+            "publish": true,
+            "topic": "input_OD",
+            "qos": 0
+          }
+        },
+        "pub_postProcess_OD": {
+                "_template": "example-template",
+                "transport": {
+                  "publish": true,
+                  "topic": "output_OD",
+                  "qos": 0
           }
         }
       }
     }
   },
-  "publisher-block": {
+  "OD_sub": {
     "links": {
       "channels": {
-        "publisher_rgb": {
-          "_template": "mqtt",
+        "OD_image": {
+          "_template": "example-template",
           "transport": {
-            "topic": "distai/realsense/rgb",
-            "publish": true
+            "publish": false,
+            "topic": "input_OD",
+            "qos": 0
           }
+        },
+        "check_output": {
+          "_template": "example-template",
+          "transport": {
+            "publish": false,
+            "topic": "output_OD",
+            "qos": 0
+          }
+        }
       }
     }
   }
-}
 }
