@@ -27,9 +27,7 @@ def main():
 
     # publishes the payload to the given channel (as defined by the configuration file)
     i = 0
-    while i < 10:
-        dust.publish("publish-mqtt", img_bytes)
-        i = i+1
+    dust.publish("publish-mqtt", img_bytes)
 
     time.sleep(1)
 

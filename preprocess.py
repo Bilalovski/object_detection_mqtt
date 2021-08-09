@@ -6,11 +6,12 @@ from PIL import Image
 import pickle
 import time
 from pydust import core
+import sys
 
 RCNN = 1
 MOBINET = 2
 
-published=False
+published = False
 
 
 def preprocess_RCNN(image):
@@ -46,44 +47,55 @@ def preprocess_mobinet(img):
 
 
 def receive(arg):
-    image= pickle.loads(arg)
-    if choice == RCNN:
+    image = pickle.loads(arg)
+    param = sys.argv
+    choice = 1
+    if len(param) > 2:
+        choice = param [1]
+        model_path = param[2]
+        label_paths = param[3]
+    if len(param) == 1:
+        choice = 1
+    print(choice)
+    print("received image")
+    if choice == 1:
+        print("rcnn")
         result = preprocess_RCNN(image)
         data = {'choice': choice, 'data': result.tolist()}
         payload = json.dumps(data)
         client.publish("preprocess_out", payload, qos=0)
 
-    if choice == MOBINET:
+    if choice == 2:
+        print("mobinet")
         result = preprocess_mobinet(image)
         data = {'choice': choice, 'data': result.tolist()}
         payload = json.dumps(data)
         client.publish("preprocess_out", payload, qos=0)
 
-    while not published:
-        pass
 
     while not published:
         pass
+    print("published")
 
 
 def on_connect(mqtt_client, obj, flags, rc):
-    if rc==0:
+    if rc == 0:
         print("connected")
     else:
         print("connection refused")
 
+
 def on_publish(client, userdata, mid):
     print("published data")
     global published
-    published=True
+    published = True
 
-image = Image.open("demo.jpg")
+
 broker = "127.0.0.1"
 client = paho.Client("preprocessor")
-client.on_connect=on_connect
-client.on_publish=on_publish
+client.on_connect = on_connect
+client.on_publish = on_publish
 client.connect(broker)
-choice = 1
 client.loop_start()
 dust = core.Core("OD_sub", "./modules")
 
@@ -102,7 +114,3 @@ dust.register_listener("OD_image", receive)
 
 while True:
     time.sleep(1)
-
-
-
-

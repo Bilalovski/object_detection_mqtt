@@ -124,6 +124,7 @@ def display_objdetect_image(image, boxes, labels, scores, score_threshold=0.7):
 
 def on_message(clientname, userdata, message):
     time.sleep(1)
+    print("message received")
     data = json.loads(message.payload.decode('utf-8'))
     global choice
     choice = data['choice']
