@@ -8,8 +8,10 @@ from PIL import Image, ImageDraw, ImageColor
 from pydust import core
 
 disp=False
+global label_path
 
-
+global datalist
+datalist = []
 def send_dust(payload):
     dust = core.Core("OD_pub", "./modules")
 
@@ -86,9 +88,9 @@ def postprocessingMobinet(num_detections, img, detection_classes, detection_boxe
     plt.imshow(img)
     plt.show()
 
-def display_objdetect_image(image, boxes, labels, scores, score_threshold=0.7):
+def display_objdetect_image(image, boxes, labels, scores, label_path, score_threshold=0.7):
     # Resize boxes
-    classes = [line.rstrip('\n') for line in open('labels.txt')]
+    classes = [line.rstrip('\n') for line in open(label_path)]
     ratio = 800.0 / min(image.size[0], image.size[1])
     boxes /= ratio
 
@@ -121,19 +123,18 @@ def display_objdetect_image(image, boxes, labels, scores, score_threshold=0.7):
     send_dust(payload)
     plt.show()
 
-
-def on_message(clientname, userdata, message):
-    time.sleep(1)
-    print("message received")
-    data = json.loads(message.payload.decode('utf-8'))
+def begin():
     global choice
+    data = datalist.pop()
     choice = data['choice']
+    global label_path
     global result1, result2, result3, disp, ogimg
     if choice == 1:
+        label_path = data['label_path']
         result1 = np.array(data['data1']).astype('float32')
-        result2= np.array(data['data2']).astype('float32')
-        result3= np.array(data['data3']).astype('float32')
-        disp=True
+        result2 = np.array(data['data2']).astype('float32')
+        result3 = np.array(data['data3']).astype('float32')
+        disp = True
     elif choice == 2:
         global result4
         result1 = np.array(data['data1']).astype('float32')
@@ -142,6 +143,13 @@ def on_message(clientname, userdata, message):
         result4 = np.array(data['data4']).astype('float32')
 
         disp = True
+
+def on_message(clientname, userdata, message):
+    time.sleep(1)
+    print("message received")
+    data = json.loads(message.payload.decode('utf-8'))
+    datalist.append(data)
+
 
 def on_connect(mqtt_client, obj, flags, rc):
     if rc==0:
@@ -158,9 +166,14 @@ client.on_connect=on_connect
 client.connect(broker)
 client.loop_start()
 while 1:
+
+    if not len(datalist)==0:
+        begin()
+
+
     if disp:
         if choice == 1:
-            display_objdetect_image(Image.open("demo.jpg"), result1, result2, result3)
+            display_objdetect_image(Image.open("demo.jpg"), result1, result2, result3, label_path)
             disp=False
         elif choice == 2:
             postprocessingMobinet(result4, Image.open("demo.jpg"), result2, result1)

@@ -27,8 +27,9 @@ def main():
 
     # publishes the payload to the given channel (as defined by the configuration file)
     i = 0
-    dust.publish("publish-mqtt", img_bytes)
-
+    while i<10:
+        dust.publish("publish-mqtt", img_bytes)
+        i=i+1
     time.sleep(1)
 
     # disconnects all channels and flushes the addon stack and transport.

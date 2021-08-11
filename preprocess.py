@@ -12,7 +12,8 @@ RCNN = 1
 MOBINET = 2
 
 published = False
-
+global img_list
+img_list = []
 
 def preprocess_RCNN(image):
     # Resize
@@ -46,36 +47,45 @@ def preprocess_mobinet(img):
     return img_data
 
 
+
 def receive(arg):
     image = pickle.loads(arg)
+    img_list.append(image)
+
+def begin():
+    image = img_list.pop()
     param = sys.argv
     choice = 1
     if len(param) > 2:
-        choice = param [1]
+        choice = param[1]
         model_path = param[2]
-        label_paths = param[3]
+        label_path = param[3]
     if len(param) == 1:
         choice = 1
+
     print(choice)
     print("received image")
     if choice == 1:
+        model_path = "FasterRCNN-10.onnx"
+        label_path = "labels.txt"
         print("rcnn")
         result = preprocess_RCNN(image)
-        data = {'choice': choice, 'data': result.tolist()}
+        data = {'choice': choice, 'data': result.tolist(), 'onnx_path': model_path, 'label_path': label_path}
         payload = json.dumps(data)
+        wait = True
         client.publish("preprocess_out", payload, qos=0)
 
     if choice == 2:
         print("mobinet")
+        model_path = "FasterRCNN-10.onnx"
+        label_path = None
         result = preprocess_mobinet(image)
-        data = {'choice': choice, 'data': result.tolist()}
+        data = {'choice': choice, 'data': result.tolist(), 'onnx_path': model_path, 'label_path': label_path}
         payload = json.dumps(data)
         client.publish("preprocess_out", payload, qos=0)
 
-
     while not published:
         pass
-    print("published")
 
 
 def on_connect(mqtt_client, obj, flags, rc):
@@ -113,4 +123,7 @@ dust.register_listener("OD_image", receive)
 # dust.register_listener("subscribe-mqtt", lambda payload: print("Received payload with %d bytes" % len(payload)))
 
 while True:
-    time.sleep(1)
+    if (not len(img_list)==0):
+        print(len(img_list))
+        begin()
+    #time.sleep(1)

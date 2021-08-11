@@ -6,6 +6,9 @@ import paho.mqtt.client as paho
 from matplotlib import pyplot as plt, patches
 import numpy as np
 
+global datalist
+datalist = []
+
 
 def display_objdetect_image(image, boxes, labels, scores, score_threshold=0.7):
     # Resize boxes
@@ -32,9 +35,17 @@ def on_message(clientName, userdata, message):
     time.sleep(1)
     print("message received")
     data = json.loads(message.payload.decode('utf-8'))
+    datalist.append(data)
+
+    # display_objdetect_image(Image.open("demo.jpg"), result[0], result[1], result[2])
+
+
+def begin():
+    data = datalist.pop()
     choice = data['choice']
-    if choice ==1:
-        session = onnxruntime.InferenceSession("FasterRCNN-10.onnx")
+    model_path = data['onnx_path']
+    if choice == 1:
+        session = onnxruntime.InferenceSession(model_path)
         img_data = np.array(data['data']).astype('float32')
         print(img_data.shape)
         input_name = session.get_inputs()[0].name
@@ -42,11 +53,11 @@ def on_message(clientName, userdata, message):
         data1 = result[0].tolist()
         data2 = result[1].tolist()
         data3 = result[2].tolist()
-        data = {'choice':choice, 'data1': data1, 'data2': data2, 'data3': data3}
+        data = {'choice': choice, 'data1': data1, 'data2': data2, 'data3': data3, 'label_path': data['label_path']}
         payload = json.dumps(data)
         client.publish("inference_out", payload)
         print("published data")
-    elif choice==2:
+    elif choice == 2:
         session = onnxruntime.InferenceSession("ssd_mobilenet_v1_10.onnx")
         img_data = np.array(data['data']).astype('uint8')
         print(img_data.shape)
@@ -56,20 +67,19 @@ def on_message(clientName, userdata, message):
         data2 = result[1].tolist()
         data3 = result[2].tolist()
         data4 = result[3].tolist()
-        data = {'choice': choice, 'data1': data1, 'data2': data2, 'data3': data3, 'data4': data4}
+        data = {'choice': choice, 'data1': data1, 'data2': data2, 'data3': data3, 'data4': data4,
+                'label_path': data['label_path']}
         payload = json.dumps(data)
         client.publish("inference_out", payload)
         print("published data")
-    # display_objdetect_image(Image.open("demo.jpg"), result[0], result[1], result[2])
 
 
 def on_connect(mqtt_client, obj, flags, rc):
-    if rc==0:
+    if rc == 0:
         client.subscribe("preprocess_out", qos=0)
         print("connected")
     else:
         print("connection refused")
-
 
 
 broker = "broker.mqttdashboard.com"
@@ -80,4 +90,5 @@ client.connect(broker)
 client.loop_start()
 
 while 1:
-    pass
+    if not len(datalist) == 0:
+        begin()
