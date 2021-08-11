@@ -8,7 +8,6 @@ import json
 def receive(arg):
     print(json.loads(arg.decode('ascii')))
 
-
 def main():
     # initialises the core with the given block name and the directory where the modules are located (default "./modules")
     dust = core.Core("OD_sub", "./modules")

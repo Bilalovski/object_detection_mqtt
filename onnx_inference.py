@@ -72,7 +72,7 @@ def on_connect(mqtt_client, obj, flags, rc):
 
 
 
-broker = "127.0.0.1"
+broker = "broker.mqttdashboard.com"
 client = paho.Client("inference_node")
 client.on_connect = on_connect
 client.on_message = on_message

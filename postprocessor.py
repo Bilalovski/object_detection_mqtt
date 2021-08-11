@@ -119,7 +119,7 @@ def display_objdetect_image(image, boxes, labels, scores, score_threshold=0.7):
 
     payload = str(json.dumps(data)).encode("ascii")
     send_dust(payload)
-    #plt.show()
+    plt.show()
 
 
 def on_message(clientname, userdata, message):
@@ -151,7 +151,7 @@ def on_connect(mqtt_client, obj, flags, rc):
         print("connection refused")
 
 
-broker = "127.0.0.1"
+broker = "broker.mqttdashboard.com"
 client = paho.Client("postprocessor")
 client.on_message=on_message
 client.on_connect=on_connect

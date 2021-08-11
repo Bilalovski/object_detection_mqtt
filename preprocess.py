@@ -91,7 +91,7 @@ def on_publish(client, userdata, mid):
     published = True
 
 
-broker = "127.0.0.1"
+broker = "broker.mqttdashboard.com"
 client = paho.Client("preprocessor")
 client.on_connect = on_connect
 client.on_publish = on_publish
